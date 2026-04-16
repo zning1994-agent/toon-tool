@@ -1,0 +1,24 @@
+{
+  "name": "@toon-tool/cli",
+  "version": "0.1.0",
+  "description": "TOON format CLI tool — convert, validate, diff",
+  "type": "module",
+  "bin": {
+    "toon": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "prepublishOnly": "npm run build"
+  },
+  "dependencies": {
+    "commander": "^12.1.0",
+    "chalk": "^5.3.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.4.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
