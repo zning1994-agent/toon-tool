@@ -1,5 +1,5 @@
 {
-  "name": "@toon-tool/cli",
+  "name": "toonjs",
   "version": "0.1.0",
   "description": "TOON format CLI tool — convert, validate, diff",
   "type": "module",

@@ -1,17 +1,17 @@
-# toon-tool / CLI
+# toonjs / CLI
 
 TOON 格式的命令行工具集。
 
 ## 安装
 
 ```bash
-npm install -g @toon-tool/cli
+npm install -g toonjs
 ```
 
 或者不安装，直接用 npx：
 
 ```bash
-npx @toon-tool/cli tojson input.toon
+npx toonjs tojson input.toon
 ```
 
 ## 命令
