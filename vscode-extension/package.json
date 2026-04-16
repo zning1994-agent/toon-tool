@@ -1,0 +1,45 @@
+{
+  "name": "toon-language",
+  "displayName": "TOON Language",
+  "description": "TOON (Token-Oriented Object Notation) syntax highlighting",
+  "version": "0.1.0",
+  "publisher": "toon-tool",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/zning1994-agent/toon-tool"
+  },
+  "engines": {
+    "vscode": "^1.75.0"
+  },
+  "categories": [
+    "Programming Languages",
+    "Syntaxes"
+  ],
+  "contributes": {
+    "languages": [
+      {
+        "id": "toon",
+        "name": "TOON",
+        "extensions": [".toon", ".toonl"],
+        "aliases": ["TOON", "toon"],
+        "filenames": ["toonfile", "toon.lock"]
+      }
+    ],
+    "grammars": [
+      {
+        "language": "toon",
+        "scopeName": "source.toon",
+        "path": "./syntaxes/toon.tmLanguage.json"
+      }
+    ]
+  },
+  "main": "./extension.js",
+  "activationEvents": [
+    "onLanguage:toon",
+    "onDebugInitialConfigurations"
+  ],
+  "devDependencies": {
+    "@types/node": "^18.0.0",
+    "@types/vscode": "^1.75.0"
+  }
+}

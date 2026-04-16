@@ -1,0 +1,95 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "TOON",
+  "scopeName": "source.toon",
+  "fileTypes": ["toon", "toonl"],
+  "patterns": [
+    {
+      "include": "#comments"
+    },
+    {
+      "include": "#strings"
+    },
+    {
+      "include": "#constants"
+    },
+    {
+      "include": "#array-size"
+    },
+    {
+      "include": "#key-value"
+    },
+    {
+      "include": "#brackets"
+    }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        {
+          "name": "comment.line.toon",
+          "match": "#.*$"
+        }
+      ]
+    },
+    "strings": {
+      "patterns": [
+        {
+          "name": "string.quoted.double.toon",
+          "begin": "\"",
+          "end": "\"",
+          "patterns": [
+            {
+              "name": "constant.character.escape.toon",
+              "match": "\\\\."
+            }
+          ]
+        }
+      ]
+    },
+    "constants": {
+      "patterns": [
+        {
+          "name": "constant.language.toon",
+          "match": "\\b(true|false|null)\\b"
+        },
+        {
+          "name": "constant.numeric.toon",
+          "match": "\\b-?\\d+(\\.\\d+)?([eE][+-]?\\d+)?\\b"
+        }
+      ]
+    },
+    "array-size": {
+      "patterns": [
+        {
+          "name": "meta.array-size.brackets.toon",
+          "match": "\\[\\d+\\]"
+        }
+      ]
+    },
+    "key-value": {
+      "patterns": [
+        {
+          "name": "entity.name.tag.key.toon",
+          "match": "^\\s*[\\w\\-]+(?=\\s*:)"
+        },
+        {
+          "name": "punctuation.definition.tag.toon",
+          "match": ":"
+        }
+      ]
+    },
+    "brackets": {
+      "patterns": [
+        {
+          "name": "punctuation.definition.array.toon",
+          "match": "[\\(\\)\\[\\]]"
+        },
+        {
+          "name": "punctuation.separator.toon",
+          "match": ","
+        }
+      ]
+    }
+  }
+}
