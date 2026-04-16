@@ -11,6 +11,7 @@ TOON (Token-Oriented Object Notation) 工具生态。
 | [JSON-TOON Converter](https://json-toon-converter.ohgiantai.com/) | Web 双向转换器 |
 | [TOON Validator](https://json-toon-converter.ohgiantai.com/validator) | Web 语法检查器 |
 | [TOON Playground](https://json-toon-converter.ohgiantai.com/playground) | Web 实时代码实验室 |
+| [TOON Schema](https://json-toon-converter.ohgiantai.com/schema) | 定义类型 + 校验 TOON 数据 |
 
 ## toonjs CLI
 
