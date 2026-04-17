@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { LangProvider } from "@/components/LangProvider";
 import { BUILD_DATE } from "@/lib/constants";
 import "./globals.css";
@@ -191,6 +191,13 @@ const allJsonLd = [
 // Pre-serialize at build time — all data is static/trusted, no user input involved.
 // Using dangerouslySetInnerHTML is required for <script> tags in React/Next.js.
 // This is safe because the content is entirely static build-time data with no user input.
+
+// --- Viewport ---
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  themeColor: "#0f172a",
+};
 
 // --- Metadata ---
 

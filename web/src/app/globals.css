@@ -332,3 +332,85 @@ a { color: inherit; text-decoration: none; }
 .tool-footer a { color: var(--accent-light); }
 .tool-footer a:hover { color: #a5b4fc; }
 .tool-footer .sep { margin: 0 0.5rem; }
+
+/* ── Mobile responsive ─────────────────────────────────── */
+@media (max-width: 768px) {
+  .tool-shell {
+    padding: 1.25rem 1rem 3rem;
+  }
+
+  .tool-hero {
+    padding: 1.5rem 0 1rem;
+  }
+  .tool-hero h1 {
+    font-size: 1.5rem;
+  }
+  .tool-hero p {
+    font-size: 0.875rem;
+  }
+
+  .tool-card {
+    padding: 1rem;
+    border-radius: 12px;
+  }
+
+  .tool-panel {
+    min-height: 240px;
+  }
+  .tool-editor {
+    min-height: 240px;
+  }
+
+  .tool-textarea,
+  .tool-output {
+    font-size: 0.75rem;
+    padding: 0.6rem 0.75rem;
+  }
+
+  .tool-stats-bar {
+    font-size: 0.72rem;
+    gap: 0.75rem;
+    padding: 0.5rem 0.75rem;
+  }
+
+  .tool-diff-row {
+    font-size: 0.7rem;
+    padding: 0.4rem 0.75rem;
+  }
+
+  .tool-footer {
+    padding: 1rem;
+    font-size: 0.75rem;
+  }
+
+  .tool-badge {
+    font-size: 0.7rem;
+    padding: 0.2rem 0.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .tool-shell {
+    padding: 1rem 0.75rem 2.5rem;
+  }
+
+  .tool-toolbar {
+    gap: 0.35rem;
+  }
+
+  .tool-pill-group {
+    width: 100%;
+    justify-content: stretch;
+  }
+  .tool-pill {
+    flex: 1;
+    text-align: center;
+    font-size: 0.75rem;
+    padding: 0.3rem 0.4rem;
+  }
+
+  .tool-issue {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.78rem;
+  }
+}

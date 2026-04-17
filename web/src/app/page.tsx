@@ -658,7 +658,27 @@ skills[2]: Python,Go`}</pre>
         .app-footer a { color: #818cf8; text-decoration: none; }
         .app-footer a:hover { color: #a5b4fc; }
         .app-footer .sep { margin: 0 0.5rem; }
-        @media (max-width: 768px) { .panels { grid-template-columns: 1fr; } .format-example { grid-template-columns: 1fr; } .format-arrow { display: none; } .use-grid { grid-template-columns: 1fr; } .howto-steps { grid-template-columns: 1fr; } }
+        @media (max-width: 768px) {
+          .panels { grid-template-columns: 1fr; }
+          .format-example { grid-template-columns: 1fr; }
+          .format-arrow { display: none; }
+          .use-grid { grid-template-columns: 1fr; }
+          .howto-steps { grid-template-columns: 1fr; }
+          .hero-title { font-size: 1.75rem; }
+          .hero-subtitle { font-size: 0.95rem; }
+          .converter-card { padding: 1rem; border-radius: 12px; }
+          .tabs { overflow-x: auto; padding-bottom: 0.25rem; }
+          .tab { font-size: 0.82rem; padding: 0.4rem 0.75rem; white-space: nowrap; }
+          .code-input, .code-output { min-height: 200px; font-size: 0.75rem; padding: 0.75rem; }
+          .info-section { padding: 1rem; }
+          .info-section h2 { font-size: 1.1rem; }
+          .howto-step { padding: 1rem; }
+          .format-col pre { font-size: 0.72rem; }
+          .action-row { flex-direction: column; gap: 0.5rem; }
+          .app-footer { padding: 1.5rem 0; font-size: 0.8rem; }
+          .syntax-table table { font-size: 0.72rem; }
+          .syntax-table th, .syntax-table td { padding: 0.5rem; }
+        }
       `}</style>
     </div>
   );

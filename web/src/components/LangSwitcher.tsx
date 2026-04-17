@@ -73,6 +73,9 @@ export default function LangSwitcher({ currentLang }: Props) {
         }
         .lang-option:hover { background: #334155; color: #e2e8f0; }
         .lang-option.active { background: #6366f1; color: white; }
+        @media (max-width: 640px) {
+          .lang-name { display: none; }
+        }
       `}</style>
     </div>
   );
