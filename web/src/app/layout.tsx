@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { LangProvider } from "@/components/LangProvider";
 import { BUILD_DATE } from "@/lib/constants";
+import "./globals.css";
 
 const SITE_URL = "https://toon-tool.ohgiantai.com";
 const GITHUB_URL = "https://github.com/zning1994-agent/toon-tool";

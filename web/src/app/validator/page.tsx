@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import SiteHeader from "@/components/SiteHeader";
 import { BUILD_DATE } from "@/lib/constants";
 
 /* ── Lexer (same logic as converter.ts) ── */
@@ -184,6 +185,7 @@ export default function ValidatorPage() {
 
   return (
     <>
+      <SiteHeader />
       {/* SEO meta — injected via parent layout */}
       <div style={vars}>
         <style>{`
