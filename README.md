@@ -1,67 +1,129 @@
-# toon-tool
+# TOON Tool Ecosystem
 
-TOON (Token-Oriented Object Notation) 工具生态。
+**Developer tools for TOON (Token-Oriented Object Notation) — a compact, bracket-free encoding optimized for LLM prompts.**
 
-## 工具列表
+## Live Demo
 
-| 工具 | 说明 |
-|------|------|
-| [toonjs CLI](https://github.com/zning1994-agent/toon-tool) | 终端 CLI：转换、验证、diff |
-| [toon-language](vscode-extension) | VS Code 语法高亮插件 |
-| [JSON-TOON Converter](https://json-toon-converter.ohgiantai.com/) | Web 双向转换器 |
-| [TOON Validator](https://json-toon-converter.ohgiantai.com/validator) | Web 语法检查器 |
-| [TOON Playground](https://json-toon-converter.ohgiantai.com/playground) | Web 实时代码实验室 |
-| [TOON Schema](https://json-toon-converter.ohgiantai.com/schema) | 定义类型 + 校验 TOON 数据 |
-| [TOON Diff](https://json-toon-converter.ohgiantai.com/diff) | 结构化文件比较工具 |
+🔗 **https://toon-tool.ohgiantai.com/**
 
-## toonjs CLI
+## All Tools
 
-终端工具。
+🔗 **[JSON-TOON Converter](https://toon-tool.ohgiantai.com/)** — Bidirectional JSON ↔ TOON converter with 10-language UI.
 
-```bash
-# 直接运行（通过 GitHub）
-npx github:zning1994-agent/toon-tool tojson input.toon
-npx github:zning1994-agent/toon-tool json input.json
-npx github:zning1994-agent/toon-tool validate config.toon
-npx github:zning1994-agent/toon-tool diff a.toon b.toon
+🔍 **[TOON Validator](https://toon-tool.ohgiantai.com/validator)** — Line-level TOON syntax checker with fix suggestions.
 
-# stdin 管道
-echo "name: test" | npx github:zning1994-agent/toon-tool tojson
+🧪 **[TOON Playground](https://toon-tool.ohgiantai.com/playground)** — Real-time split editor for TOON ↔ JSON preview.
+
+📐 **[TOON Schema](https://toon-tool.ohgiantai.com/schema)** — Define types and validate TOON instances against schemas.
+
+🔀 **[TOON Diff](https://toon-tool.ohgiantai.com/diff)** — Structural diff for two TOON files with key-level change tracking.
+
+🖥️ **[toonjs CLI](https://github.com/zning1994-agent/toon-tool)** — Terminal tool for TOON ↔ JSON conversion, validation, and diff.
+
+📦 **[toon-language (VS Code)](https://github.com/zning1994-agent/toon-tool/tree/main/vscode-extension)** — Syntax highlighting for `.toon` / `.toonl` files in VS Code.
+
+## Other Languages / 其他语言
+
+🇺🇸 English · [🇨🇳 简体中文](README_CN.md) · [🇯🇵 日本語](README_JA.md) · [🇪🇸 Español](README_ES.md) · [🇩🇪 Deutsch](README_DE.md) · [🇰🇷 한국어](README_KO.md) · [🇧🇷 Português](README_PT.md) · [🇷🇺 Русский](README_RU.md)
+
+---
+
+## What is TOON?
+
+TOON (Token-Oriented Object Notation) is a compact, bracket-free encoding of JSON data designed for LLM prompts. It reduces token count by ~40% compared to standard JSON while remaining fully reversible.
+
+## Features
+
+- 🌐 **10 languages**: English, 简体中文, 繁體中文, 日本語, Français, Español, Deutsch, 한국어, Português, Русский
+- 🔄 **Bidirectional conversion**: JSON ↔ TOON
+- ✔️ **Validate**: Check TOON syntax and round-trip integrity
+- 📋 **Browser-only**: No data sent to any server
+- 📱 **Responsive**: Works on desktop and mobile
+- 📦 **Tabular arrays**: Full support for TOON tabular array syntax
+- 🔍 **SEO optimized**: JSON-LD, sitemap, robots.txt, Open Graph
+- ⚡ **Fast**: Pure JavaScript, instant conversion
+
+## TOON Syntax
+
+### Object
+```
+name: Alice
+age: 30
 ```
 
-构建：
+### Nested Object
+```
+user:
+  name: Alice
+  age: 30
+```
+
+### Inline Array (uniform primitives)
+```
+roles[2]: admin,user
+```
+
+### Tabular Array (uniform objects)
+```
+users[2]{id,name}:
+  1,Alice
+  2,Bob
+```
+
+### Mixed Array
+```
+items[3]:
+  - 1
+  - name: Alice
+  - [2]: x,y
+```
+
+## Quick Example
+
+**JSON:**
+```json
+{
+  "user": "Ning",
+  "role": "engineer",
+  "skills": ["Python", "Go"]
+}
+```
+
+**TOON:**
+```
+user: Ning
+role: engineer
+skills[2]: Python,Go
+```
+
+## Tech Stack
+
+- Next.js 14 (Static Export)
+- TypeScript
+- Pure client-side conversion (no backend)
+- GitHub Pages deployment
+- GitHub Actions CI/CD
+
+## Development
+
 ```bash
+# Web tools
+cd web
+npm install
+npm run dev
+npm run build
+
+# CLI tools
+cd ..
 npm install
 npm run build
 node dist/index.js --help
 ```
 
-## toon-language (VS Code 扩展)
+## Spec
 
-VS Code 语法高亮插件，支持 `.toon` / `.toonl` 文件。
+Based on the [TOON Format Specification](https://toonformat.dev).
 
-安装：
-```bash
-# 源码安装：复制到 ~/.vscode/extensions/toon-language
-# 或
-code --install-extension vscode-extension/toon-language-0.1.0.vsix
-```
+## License
 
-## TOON 格式说明
-
-TOON 是一种紧凑的、括号无关的 JSON 编码格式。
-
-```
-name: GitHub
-url: https://github.com
-stars: 42000
-fork: true
-languages[3]:
-  JavaScript, Python, Go
-  Rust, TypeScript
-  C++, Java
-tags:
-  (json toon converter)
-```
-
-详见：[toonformat.dev](https://toonformat.dev/reference/spec.html)
+MIT
