@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  <url>
+    <loc>https://toon-tool.ohgiantai.com/</loc>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://toon-tool.ohgiantai.com/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://toon-tool.ohgiantai.com/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://toon-tool.ohgiantai.com/?lang=zh-CN"/>
+    <xhtml:link rel="alternate" hreflang="zh-TW" href="https://toon-tool.ohgiantai.com/?lang=zh-TW"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://toon-tool.ohgiantai.com/?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://toon-tool.ohgiantai.com/?lang=fr"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://toon-tool.ohgiantai.com/?lang=es"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://toon-tool.ohgiantai.com/?lang=de"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://toon-tool.ohgiantai.com/?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="pt" href="https://toon-tool.ohgiantai.com/?lang=pt"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://toon-tool.ohgiantai.com/?lang=ru"/>
+    <lastmod>2026-04-16</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>https://toon-tool.ohgiantai.com/validator</loc>
+    <lastmod>2026-04-16</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://toon-tool.ohgiantai.com/playground</loc>
+    <lastmod>2026-04-16</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://toon-tool.ohgiantai.com/schema</loc>
+    <lastmod>2026-04-16</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://toon-tool.ohgiantai.com/diff</loc>
+    <lastmod>2026-04-16</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+</urlset>
