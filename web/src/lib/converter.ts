@@ -275,8 +275,8 @@ function parsePrimitive(raw: string): JSONValue {
   if (s === "true") return true;
   if (s === "false") return false;
   if (s.startsWith('"') && s.endsWith('"') && s.length >= 2) {
-    // Unescape TOON string escapes: \\ → \ first, then \" → "
-    return s.slice(1, -1).replace(/\\\\/g, '\\').replace(/\\"/g, '"');
+    // Unescape \" first, then \\ — reversing the order collapses "\\\"" incorrectly to '"' instead of '\"'.
+    return s.slice(1, -1).replace(/\\"/g, '"').replace(/\\\\/g, '\\');
   }
   const n = Number(s);
   if (!isNaN(n) && String(n) === s) return n;
