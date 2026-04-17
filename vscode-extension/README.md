@@ -8,7 +8,7 @@ TOON（Token-Oriented Object Notation）语法高亮插件。
 
 ```bash
 # 克隆
-git clone https://github.com/zning1994-agent/toon-tool.git
+git clone https://github.com/zning1994/toon-tool.git
 cd toon-tool/vscode-extension
 
 # 复制到 VS Code 扩展目录
@@ -46,7 +46,7 @@ code --install-extension toon-language.vsix
 ```
 # Repository config
 name: toon-tool
-url: https://github.com/zning1994-agent/toon-tool
+url: https://github.com/zning1994/toon-tool
 stars: 42
 fork: true
 languages[3]:

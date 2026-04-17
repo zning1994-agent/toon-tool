@@ -6,7 +6,7 @@ TOON (Token-Oriented Object Notation) 工具生态。
 
 | 工具 | 说明 |
 |------|------|
-| [toonjs CLI](https://github.com/zning1994-agent/toon-tool) | 终端 CLI：转换、验证、diff |
+| [toonjs CLI](https://github.com/zning1994/toon-tool) | 终端 CLI：转换、验证、diff |
 | [toon-language](vscode-extension) | VS Code 语法高亮插件 |
 | [JSON-TOON Converter](https://json-toon-converter.ohgiantai.com/) | Web 双向转换器 |
 | [TOON Validator](https://json-toon-converter.ohgiantai.com/validator) | Web 语法检查器 |
@@ -19,13 +19,13 @@ TOON (Token-Oriented Object Notation) 工具生态。
 
 ```bash
 # 直接运行（通过 GitHub）
-npx github:zning1994-agent/toon-tool tojson input.toon
-npx github:zning1994-agent/toon-tool json input.json
-npx github:zning1994-agent/toon-tool validate config.toon
-npx github:zning1994-agent/toon-tool diff a.toon b.toon
+npx github:zning1994/toon-tool tojson input.toon
+npx github:zning1994/toon-tool json input.json
+npx github:zning1994/toon-tool validate config.toon
+npx github:zning1994/toon-tool diff a.toon b.toon
 
 # stdin 管道
-echo "name: test" | npx github:zning1994-agent/toon-tool tojson
+echo "name: test" | npx github:zning1994/toon-tool tojson
 ```
 
 构建：
