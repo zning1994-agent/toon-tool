@@ -1,4 +1,5 @@
 "use client";
+import ToolLayout from "@/components/ToolLayout";
 import { useState, useCallback } from "react";
 import { BUILD_DATE } from "@/lib/constants";
 
@@ -201,34 +202,9 @@ export default function DiffPage() {
     k === "added" ? "+" : k === "removed" ? "−" : "≠";
 
   return (
-    <>
-      <title>TOON Diff — Compare TOON Files</title>
-      <meta name="description" content="Visually compare two TOON files — see added, removed, and changed keys with structural diff." />
-      <meta property="og:title" content="TOON Diff" />
-
+    <ToolLayout>
       <div className="min-h-screen bg-[#0d1117] text-gray-200 font-mono">
         {/* Header */}
-        <header className="border-b border-[#30363d] px-6 py-4 flex items-center justify-between">
-          <div>
-            <h1 className="text-lg font-bold text-white">TOON Diff</h1>
-            <p className="text-xs text-gray-400 mt-0.5">Compare two TOON files — structural key-level diff</p>
-          </div>
-          <div className="flex gap-3 items-center">
-            <div className="flex bg-[#161b22] rounded-lg border border-[#30363d] p-0.5">
-              {([["unified", "Unified"], ["split", "Split"]] as const).map(([v, label]) => (
-                <button key={v} onClick={() => setViewMode(v)}
-                  className={`px-3 py-1 text-xs rounded-md transition ${viewMode === v ? "bg-[#30363d] text-white" : "text-gray-400 hover:text-white"}`}
-                >{label}</button>
-              ))}
-            </div>
-            <button onClick={() => { setLeft(SAMPLE_LEFT); setRight(SAMPLE_RIGHT); }}
-              className="px-3 py-1 text-xs rounded-md border border-[#30363d] text-gray-300 hover:text-white hover:bg-[#30363d] transition"
-            >重置示例</button>
-            <button onClick={computeDiff}
-              className="px-3 py-1 text-xs rounded-md bg-[#238636] text-white hover:bg-[#2ea043] transition"
-            >对比 ↗</button>
-          </div>
-        </header>
 
         {/* Stats bar */}
         {diff.length > 0 && (
@@ -308,6 +284,6 @@ export default function DiffPage() {
           <span>Build {BUILD_DATE}</span>
         </footer>
       </div>
-    </>
+    </ToolLayout>
   );
 }

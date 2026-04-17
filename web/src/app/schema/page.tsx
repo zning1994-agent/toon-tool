@@ -1,4 +1,5 @@
 "use client";
+import ToolLayout from "@/components/ToolLayout";
 import { useState, useCallback } from "react";
 import { BUILD_DATE } from "@/lib/constants";
 
@@ -372,26 +373,9 @@ export default function SchemaPage() {
   });
 
   return (
-    <>
-      <title>TOON Schema — Define and Validate TOON Data</title>
-      <meta name="description" content="Define TOON Schema and validate TOON instances against it. Enforce types, required fields, min/max, enum constraints." />
-      <meta property="og:title" content="TOON Schema Validator" />
-      <meta property="og:description" content="Define TOON Schema and validate TOON data with type checking, required fields, and constraints." />
-
+    <ToolLayout>
       <div className="min-h-screen bg-[#0d1117] text-gray-200 font-mono">
         {/* Header */}
-        <header className="border-b border-[#30363d] px-6 py-4 flex items-center justify-between">
-          <div>
-            <h1 className="text-lg font-bold text-white">TOON Schema</h1>
-            <p className="text-xs text-gray-400 mt-0.5">Define types · Validate instances · Enforce constraints</p>
-          </div>
-          <div className="flex gap-3">
-            <button
-              onClick={() => { setSchemaText(SAMPLE_SCHEMA); setInstanceText(SAMPLE_TOON); }}
-              className="px-3 py-1 text-xs rounded-md border border-[#30363d] text-gray-300 hover:text-white hover:bg-[#30363d] transition"
-            >重置示例</button>
-          </div>
-        </header>
 
         {/* Errors banner */}
         {errors.length > 0 && (
@@ -470,6 +454,6 @@ export default function SchemaPage() {
           <span>Build {BUILD_DATE}</span>
         </footer>
       </div>
-    </>
+    </ToolLayout>
   );
 }

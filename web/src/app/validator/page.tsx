@@ -247,14 +247,6 @@ export default function ValidatorPage() {
           </select>
         </div>
 
-        <header>
-          <a className="logo" href="https://toon-tool.ohgiantai.com">toon.<span>tool</span></a>
-          <nav>
-            <a href="https://toon-tool.ohgiantai.com">Converter</a>
-            <a href="#" className="active">Validator</a>
-          </nav>
-        </header>
-
         <div className="hero">
           <h1>🔍 TOON Validator</h1>
           <p>{t.subtitle}</p>

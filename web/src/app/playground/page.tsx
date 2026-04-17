@@ -1,4 +1,5 @@
 "use client";
+import ToolLayout from "@/components/ToolLayout";
 import { useState, useEffect, useRef } from "react";
 import { toonToJson, jsonToToon } from "@/lib/converter";
 import { BUILD_DATE } from "@/lib/constants";
@@ -76,35 +77,9 @@ export default function PlaygroundPage() {
   };
 
   return (
-    <>
-      <title>TOON Playground — 实时代码实验室</title>
-      <meta name="description" content="TOON Playground: 实时代码实验室，TOON 格式与 JSON 格式实时互转，左侧输入，右侧即时预览。" />
-      <meta property="og:title" content="TOON Playground" />
-      <meta property="og:description" content="TOON 格式与 JSON 格式实时互转，即时预览。" />
-
+    <ToolLayout>
       <div className="min-h-screen bg-[#0d1117] text-gray-200 font-mono">
         {/* Header */}
-        <header className="border-b border-[#30363d] px-6 py-4 flex items-center justify-between">
-          <div>
-            <h1 className="text-lg font-bold text-white">TOON Playground</h1>
-            <p className="text-xs text-gray-400 mt-0.5">实时代码实验室 · 左侧输入，右侧即时预览</p>
-          </div>
-          <div className="flex gap-3 items-center">
-            <div className="flex bg-[#161b22] rounded-lg border border-[#30363d] p-0.5">
-              <button
-                onClick={() => { setToon(SAMPLE); setActiveTab("toon→json"); }}
-                className="px-3 py-1 text-xs rounded-md text-gray-300 hover:text-white hover:bg-[#30363d] transition"
-              >重置示例</button>
-            </div>
-            <button
-              onClick={handleSwap}
-              className="px-3 py-1.5 text-xs rounded-lg border border-[#30363d] text-gray-300 hover:text-white hover:bg-[#30363d] transition"
-              title="交换转换方向"
-            >
-              ⇄ 交换
-            </button>
-          </div>
-        </header>
 
         {/* Direction pill */}
         <div className="px-6 py-3 flex items-center gap-4 border-b border-[#30363d]">
@@ -186,6 +161,6 @@ export default function PlaygroundPage() {
           <span>Build {BUILD_DATE}</span>
         </footer>
       </div>
-    </>
+    </ToolLayout>
   );
 }
