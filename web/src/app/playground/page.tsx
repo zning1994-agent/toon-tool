@@ -12,14 +12,9 @@ latest_release:
   tag: v3.2.1
   date: 2026-01-15
   assets: 5
-  notes: >
-    This release includes
-    multi-line content
-    support
-languages[3]:
-  JavaScript, Python, Go
-  Rust, TypeScript
-  Java, C++`;
+languages[3]: JavaScript,Python,Go`;
+
+type Direction = "toon→json" | "json→toon";
 
 function lineNumbers(n: number) {
   return Array.from({ length: n }, (_, i) => i + 1);
@@ -29,14 +24,19 @@ export default function PlaygroundPage() {
   const [toon, setToon] = useState(SAMPLE);
   const [json, setJson] = useState("");
   const [error, setError] = useState("");
-  const [activeTab, setActiveTab] = useState<"toon→json" | "json→toon">("toon→json");
+  const [activeTab, setActiveTab] = useState<Direction>("toon→json");
   const toonRef = useRef<HTMLTextAreaElement>(null);
   const jsonRef = useRef<HTMLTextAreaElement>(null);
   const [toonLines, setToonLines] = useState(lineNumbers(SAMPLE.split("\n").length));
   const [jsonLines, setJsonLines] = useState<number[]>([]);
 
-  const convert = (src: string, dir: "toon→json" | "json→toon") => {
-    if (!src.trim()) { setJson(""); setError(""); return; }
+  const convert = (src: string, dir: Direction) => {
+    if (!src.trim()) {
+      setJson("");
+      setError("");
+      setJsonLines([]);
+      return;
+    }
     try {
       if (dir === "toon→json") {
         const result = toonToJson(src);
@@ -58,109 +58,132 @@ export default function PlaygroundPage() {
     }
   };
 
-  // live convert
   useEffect(() => {
-    const t = setTimeout(() => convert(toon, activeTab), 150);
-    return () => clearTimeout(t);
+    const timer = setTimeout(() => convert(toon, activeTab), 150);
+    return () => clearTimeout(timer);
   }, [toon, activeTab]);
 
-  const syncScroll = (src: React.RefObject<HTMLTextAreaElement | null>, tgt: React.RefObject<HTMLTextAreaElement | null>) => {
+  const syncScroll = (
+    src: React.RefObject<HTMLTextAreaElement | null>,
+    tgt: React.RefObject<HTMLTextAreaElement | null>,
+  ) => {
     if (!src.current || !tgt.current) return;
     tgt.current.scrollTop = src.current.scrollTop;
     tgt.current.scrollLeft = src.current.scrollLeft;
   };
 
-  const handleSwap = () => {
-    const newTab: "toon→json" | "json→toon" = activeTab === "toon→json" ? "json→toon" : "toon→json";
-    setActiveTab(newTab);
-    setTimeout(() => convert(toon, newTab), 0);
-  };
+  const outputLabel = activeTab === "toon→json" ? "JSON" : "TOON";
+  const inputLabel = activeTab === "toon→json" ? "TOON" : "JSON";
+  const inputPlaceholder =
+    activeTab === "toon→json" ? "Paste TOON here..." : "Paste JSON here...";
 
   return (
     <ToolLayout>
-      <div className="min-h-screen bg-[#0d1117] text-gray-200 font-mono">
-        {/* Header */}
+      <div className="tool-shell">
+        <section className="tool-hero">
+          <h1>TOON Playground</h1>
+          <p>
+            Live two-way editor with synced scrolling and line numbers. Toggle the
+            direction to convert between TOON and JSON in real time.
+          </p>
+        </section>
 
-        {/* Direction pill */}
-        <div className="px-6 py-3 flex items-center gap-4 border-b border-[#30363d]">
-          <div className="flex bg-[#161b22] rounded-lg border border-[#30363d] p-0.5">
-            {(["toon→json", "json→toon"] as const).map((t) => (
-              <button
-                key={t}
-                onClick={() => { setActiveTab(t); setTimeout(() => convert(toon, t), 0); }}
-                className={`px-4 py-1.5 text-sm rounded-md transition ${
-                  activeTab === t
-                    ? "bg-[#238636] text-white font-semibold"
-                    : "text-gray-400 hover:text-white"
-                }`}
-              >{t}</button>
-            ))}
-          </div>
-          {error && (
-            <span className="text-xs text-red-400 bg-red-400/10 border border-red-400/20 px-2 py-1 rounded">
-              ⚠ {error}
+        <div className="tool-card">
+          <div className="tool-toolbar">
+            <div className="tool-pill-group" role="tablist">
+              {(["toon→json", "json→toon"] as const).map((dir) => (
+                <button
+                  key={dir}
+                  className={`tool-pill ${activeTab === dir ? "active" : ""}`}
+                  onClick={() => setActiveTab(dir)}
+                  role="tab"
+                  aria-selected={activeTab === dir}
+                >
+                  {dir}
+                </button>
+              ))}
+            </div>
+            {error && (
+              <span className="tool-badge err" role="alert">
+                ⚠ {error}
+              </span>
+            )}
+            <div className="spacer" />
+            <span className="meta">
+              {toon.split("\n").length} lines · {toon.length} chars
             </span>
-          )}
-        </div>
-
-        {/* Split editor */}
-        <div className="flex" style={{ height: "calc(100vh - 130px)" }}>
-          {/* Left: TOON input */}
-          <div className="flex-1 flex flex-col border-r border-[#30363d]">
-            <div className="px-4 py-2 text-xs text-gray-400 border-b border-[#21262d] bg-[#161b22]">TOON</div>
-            <div className="flex flex-1 overflow-hidden">
-              <div className="w-12 bg-[#161b22] border-r border-[#21262d] text-right pr-2 pt-3 text-xs text-[#484f58] leading-6 select-none overflow-hidden">
-                {toonLines.map((n) => (
-                  <div key={n}>{n}</div>
-                ))}
-              </div>
-              <textarea
-                ref={toonRef}
-                value={toon}
-                onChange={(e) => {
-                  setToon(e.target.value);
-                  setToonLines(lineNumbers(e.target.value.split("\n").length));
-                }}
-                onScroll={() => syncScroll(toonRef, jsonRef)}
-                className="flex-1 bg-[#0d1117] text-gray-200 p-3 text-sm leading-6 resize-none outline-none font-mono"
-                spellCheck={false}
-                placeholder="输入 TOON 或 JSON..."
-                style={{ tabSize: 2 }}
-              />
-            </div>
           </div>
 
-          {/* Right: JSON output */}
-          <div className="flex-1 flex flex-col">
-            <div className="px-4 py-2 text-xs text-gray-400 border-b border-[#21262d] bg-[#161b22]">
-              {activeTab === "toon→json" ? "JSON" : "TOON"}
-            </div>
-            <div className="flex flex-1 overflow-hidden">
-              <div className="w-12 bg-[#161b22] border-r border-[#21262d] text-right pr-2 pt-3 text-xs text-[#484f58] leading-6 select-none overflow-hidden">
-                {jsonLines.map((n) => (
-                  <div key={n}>{n}</div>
-                ))}
+          <div className="tool-split">
+            <div className="tool-panel">
+              <div className="tool-panel-header">
+                <span>{inputLabel} input</span>
+                <span className="hint">editable</span>
               </div>
-              <textarea
-                ref={jsonRef}
-                value={json}
-                readOnly
-                onScroll={() => syncScroll(jsonRef, toonRef)}
-                className="flex-1 bg-[#0d1117] text-green-400 p-3 text-sm leading-6 resize-none outline-none font-mono"
-                spellCheck={false}
-                placeholder="输出..."
-                style={{ tabSize: 2 }}
-              />
+              <div className="tool-editor">
+                <div className="tool-line-numbers" aria-hidden="true">
+                  {toonLines.map((n) => (
+                    <div key={n}>{n}</div>
+                  ))}
+                </div>
+                <textarea
+                  ref={toonRef}
+                  value={toon}
+                  onChange={(e) => {
+                    setToon(e.target.value);
+                    setToonLines(lineNumbers(e.target.value.split("\n").length));
+                  }}
+                  onScroll={() => syncScroll(toonRef, jsonRef)}
+                  className="tool-textarea"
+                  spellCheck={false}
+                  placeholder={inputPlaceholder}
+                  style={{ tabSize: 2 }}
+                  aria-label={`${inputLabel} input`}
+                />
+              </div>
+            </div>
+
+            <div className="tool-panel">
+              <div className="tool-panel-header">
+                <span>{outputLabel} output</span>
+                <span className="hint">read-only</span>
+              </div>
+              <div className="tool-editor">
+                <div className="tool-line-numbers" aria-hidden="true">
+                  {jsonLines.map((n) => (
+                    <div key={n}>{n}</div>
+                  ))}
+                </div>
+                <textarea
+                  ref={jsonRef}
+                  value={json}
+                  readOnly
+                  onScroll={() => syncScroll(jsonRef, toonRef)}
+                  className="tool-textarea"
+                  spellCheck={false}
+                  placeholder="Converted output appears here..."
+                  style={{ tabSize: 2 }}
+                  aria-label={`${outputLabel} output`}
+                />
+              </div>
             </div>
           </div>
         </div>
-
-        {/* Footer */}
-        <footer className="border-t border-[#30363d] px-6 py-3 flex items-center justify-between text-xs text-gray-500">
-          <span>TOON Playground · 实时代码实验室</span>
-          <span>Build {BUILD_DATE}</span>
-        </footer>
       </div>
+
+      <footer className="tool-footer">
+        <span>TOON Playground</span>
+        <span className="sep">·</span>
+        <a
+          href="https://github.com/zning1994-agent/toon-tool"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          GitHub
+        </a>
+        <span className="sep">·</span>
+        <span>Last updated: {BUILD_DATE}</span>
+      </footer>
     </ToolLayout>
   );
 }

@@ -1,6 +1,6 @@
 "use client";
 import ToolLayout from "@/components/ToolLayout";
-import { useState, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { BUILD_DATE } from "@/lib/constants";
 
 /* ── TOON Schema Validator ─────────────────────────────────────────── */
@@ -23,8 +23,6 @@ interface SchemaRule {
 
 type SchemaMap = Record<string, SchemaRule>;
 
-// ── Schema parser ─────────────────────────────────────────────────────
-
 function parseSchema(lines: string[]): SchemaMap {
   const schema: SchemaMap = {};
   let i = 0;
@@ -45,22 +43,16 @@ function parseSchema(lines: string[]): SchemaMap {
       if (content === "}") { i++; break; }
 
       const typeMatch = content.match(/^(\w+)\s*:/);
-      const keyMatch = content.match(/^(\w+)\s*:/);
       if (typeMatch) {
         const key = typeMatch[1];
         const rest = content.slice(key.length + 1).trim();
 
-        if (key === "type") {
-          rule.type = rest.replace(/["']/g, "");
-        } else if (key === "required") {
-          rule.required = rest === "true";
-        } else if (key === "min") {
-          rule.min = parseFloat(rest);
-        } else if (key === "max") {
-          rule.max = parseFloat(rest);
-        } else if (key === "pattern") {
-          rule.pattern = rest.replace(/^["']|["']$/g, "");
-        } else if (key === "enum") {
+        if (key === "type") rule.type = rest.replace(/["']/g, "");
+        else if (key === "required") rule.required = rest === "true";
+        else if (key === "min") rule.min = parseFloat(rest);
+        else if (key === "max") rule.max = parseFloat(rest);
+        else if (key === "pattern") rule.pattern = rest.replace(/^["']|["']$/g, "");
+        else if (key === "enum") {
           rule.enum = rest.replace(/^\[/, "").replace(/\]$/, "").split(",").map((s) => {
             s = s.trim().replace(/^["']|["']$/g, "");
             if (s === "true") return true;
@@ -69,21 +61,17 @@ function parseSchema(lines: string[]): SchemaMap {
             if (!isNaN(Number(s))) return Number(s);
             return s;
           });
-        } else if (key === "minItems") {
-          rule.minItems = parseInt(rest, 10);
-        } else if (key === "maxItems") {
-          rule.maxItems = parseInt(rest, 10);
-        } else if (rest === "{") {
+        } else if (key === "minItems") rule.minItems = parseInt(rest, 10);
+        else if (key === "maxItems") rule.maxItems = parseInt(rest, 10);
+        else if (rest === "{") {
           i++;
           rule.properties = {};
-          const innerIndent = lineIndent + 2;
-          const innerRules = parseBlock(innerIndent);
+          const innerRules = parseBlock(lineIndent + 2);
           rule.properties = innerRules;
         } else if (rest === "[") {
           i++;
           rule.items = parseRule(lineIndent + 2);
         } else {
-          // unknown key — treat as field
           i++;
         }
       } else {
@@ -138,17 +126,13 @@ function parseSchema(lines: string[]): SchemaMap {
   return schema;
 }
 
-// ── Validation ─────────────────────────────────────────────────────────
-
 interface ValidationError {
   path: string;
   message: string;
-  line: number;
 }
 
 function validateValue(value: JSONValue, rule: SchemaRule | undefined, path: string, lines: string[]): ValidationError[] {
   const errors: ValidationError[] = [];
-
   if (rule === undefined) return errors;
 
   if (rule.type) {
@@ -156,33 +140,33 @@ function validateValue(value: JSONValue, rule: SchemaRule | undefined, path: str
       : value === null ? "null"
       : typeof value;
     if (actualType !== rule.type && !(rule.type === "number" && typeof value === "number")) {
-      errors.push({ path, message: `Expected ${rule.type}, got ${actualType}`, line: 1 });
+      errors.push({ path, message: `Expected ${rule.type}, got ${actualType}` });
     }
   }
 
   if (rule.min !== undefined && typeof value === "number" && value < rule.min) {
-    errors.push({ path, message: `Value ${value} is less than minimum ${rule.min}`, line: 1 });
+    errors.push({ path, message: `Value ${value} is less than minimum ${rule.min}` });
   }
   if (rule.max !== undefined && typeof value === "number" && value > rule.max) {
-    errors.push({ path, message: `Value ${value} exceeds maximum ${rule.max}`, line: 1 });
+    errors.push({ path, message: `Value ${value} exceeds maximum ${rule.max}` });
   }
 
   if (rule.enum && !rule.enum.includes(value)) {
-    errors.push({ path, message: `Value must be one of [${rule.enum.join(", ")}]`, line: 1 });
+    errors.push({ path, message: `Value must be one of [${rule.enum.join(", ")}]` });
   }
 
   if (rule.minItems !== undefined && Array.isArray(value) && value.length < rule.minItems) {
-    errors.push({ path, message: `Array has ${value.length} items, minimum is ${rule.minItems}`, line: 1 });
+    errors.push({ path, message: `Array has ${value.length} items, minimum is ${rule.minItems}` });
   }
   if (rule.maxItems !== undefined && Array.isArray(value) && value.length > rule.maxItems) {
-    errors.push({ path, message: `Array has ${value.length} items, maximum is ${rule.maxItems}`, line: 1 });
+    errors.push({ path, message: `Array has ${value.length} items, maximum is ${rule.maxItems}` });
   }
 
   if (rule.properties && typeof value === "object" && value !== null && !Array.isArray(value)) {
     const obj = value as JSONObject;
     for (const [key, fieldRule] of Object.entries(rule.properties)) {
       if (fieldRule.required && !(key in obj)) {
-        errors.push({ path: `${path}.${key}`, message: `Missing required field "${key}"`, line: 1 });
+        errors.push({ path: `${path}.${key}`, message: `Missing required field "${key}"` });
       }
       if (key in obj) {
         errors.push(...validateValue(obj[key], fieldRule, `${path}.${key}`, lines));
@@ -199,8 +183,7 @@ function validateValue(value: JSONValue, rule: SchemaRule | undefined, path: str
   return errors;
 }
 
-// ── TOON → JSON ──────────────────────────────────────────────────────
-
+/* ── TOON → JSON (minimal parser for schema page) ── */
 interface LexedLine {
   raw: string; content: string; indent: number; kind: string;
   key?: string; fields?: string[]; rowVals?: string[]; size?: number;
@@ -239,7 +222,7 @@ function parsePrimitive(raw: string): JSONValue {
   if (s === "true") return true;
   if (s === "false") return false;
   if (!isNaN(Number(s)) && s !== "") return Number(s);
-  if ((s.startsWith('"') && s.endsWith('"')) || (s.startsWith('"') && s.endsWith('"'))) {
+  if (s.startsWith('"') && s.endsWith('"') && s.length >= 2) {
     return s.slice(1, -1).replace(/\\"/g, '"').replace(/\\\\/g, "\\");
   }
   return s;
@@ -248,7 +231,6 @@ function parsePrimitive(raw: string): JSONValue {
 function parseBlock(lines: LexedLine[], start: number, currentIndent: number): { value: JSONValue; consumed: number } {
   let i = start;
   const obj: JSONObject = {};
-  const arr: JSONValue[] = [];
 
   while (i < lines.length) {
     const line = lines[i];
@@ -268,13 +250,12 @@ function parseBlock(lines: LexedLine[], start: number, currentIndent: number): {
       const key = line.key!;
       const fields = line.fields!;
       const rows: JSONObject[] = [];
-      const expectedSize = fields.length;
       const innerIndent = line.indent + 2;
       i++;
       while (i < lines.length && lines[i].indent >= innerIndent) {
         if (lines[i].kind === "tabular") {
           const rowVals = lines[i].rowVals!;
-          if (rowVals.length === expectedSize) {
+          if (rowVals.length === fields.length) {
             const row: JSONObject = {};
             fields.forEach((f, idx) => { row[f] = parsePrimitive(rowVals[idx]); });
             rows.push(row);
@@ -288,28 +269,21 @@ function parseBlock(lines: LexedLine[], start: number, currentIndent: number): {
     }
   }
 
-  return { value: Object.keys(obj).length > 0 ? obj : (arr.length > 0 ? arr : {}), consumed: i - start };
+  return { value: obj, consumed: i - start };
 }
 
 function toonToJson(toon: string): JSONValue {
-  const lines = lex(toon);
-  const { value } = parseBlock(lines, 0, 0);
+  const { value } = parseBlock(lex(toon), 0, 0);
   return value;
 }
 
-// ── UI ───────────────────────────────────────────────────────────────
+/* ── UI ─────────────────────────────────────────────────────────────── */
 
 const SAMPLE_SCHEMA = `# TOON Schema — GitHub Repo
-type: object
-required:
-  name: string
-  stars: number
-  fork: boolean
-url:
-  type: string
-  pattern: "^https://"
-description:
-  type: string
+name: string
+stars: number
+fork: boolean
+url: string
 languages:
   type: array
   items:
@@ -324,13 +298,11 @@ config:
     debug:
       type: boolean`;
 
-const SAMPLE_TOON = `# GitHub repo
-name: toon-tool
+const SAMPLE_TOON = `name: toon-tool
 url: https://github.com/zning1994-agent/toon-tool
 stars: 42
 fork: true
-languages:
-  JavaScript, TypeScript, Python
+languages[3]: JavaScript,TypeScript,Python
 config:
   port: 3000
   debug: true`;
@@ -345,7 +317,6 @@ export default function SchemaPage() {
   const [errors, setErrors] = useState<ValidationError[]>([]);
   const [schemaLines, setSchemaLines] = useState(lineNumbers(SAMPLE_SCHEMA.split("\n").length));
   const [instanceLines, setInstanceLines] = useState(lineNumbers(SAMPLE_TOON.split("\n").length));
-  const [mode, setMode] = useState<"schema" | "table">("schema");
 
   const validate = useCallback(() => {
     try {
@@ -354,7 +325,7 @@ export default function SchemaPage() {
       const allErrors: ValidationError[] = [];
       for (const [key, rule] of Object.entries(schema)) {
         if (rule.required && !(key in (instance as JSONObject))) {
-          allErrors.push({ path: key, message: `Missing required field "${key}"`, line: 1 });
+          allErrors.push({ path: key, message: `Missing required field "${key}"` });
         }
         if (key in (instance as JSONObject)) {
           allErrors.push(...validateValue((instance as JSONObject)[key], rule, key, instanceText.split("\n")));
@@ -362,98 +333,128 @@ export default function SchemaPage() {
       }
       setErrors(allErrors);
     } catch (e: unknown) {
-      setErrors([{ path: "", message: e instanceof Error ? e.message : String(e), line: 1 }]);
+      setErrors([{ path: "", message: e instanceof Error ? e.message : String(e) }]);
     }
   }, [schemaText, instanceText]);
 
-  // Live validate
-  useState(() => {
+  useEffect(() => {
     const t = setTimeout(validate, 300);
     return () => clearTimeout(t);
-  });
+  }, [validate]);
+
+  const hasInput = schemaText.trim() && instanceText.trim();
 
   return (
     <ToolLayout>
-      <div className="min-h-screen bg-[#0d1117] text-gray-200 font-mono">
-        {/* Header */}
+      <div className="tool-shell">
+        <section className="tool-hero">
+          <h1>TOON Schema Validator</h1>
+          <p>
+            Declare a lightweight schema in TOON-style syntax and validate your
+            document against it — type checks, ranges, enums, required fields and
+            array bounds.
+          </p>
+        </section>
 
-        {/* Errors banner */}
-        {errors.length > 0 && (
-          <div className="border-b border-red-900/50 bg-red-950/30 px-6 py-3">
-            <div className="text-xs text-red-400 font-semibold mb-1">✗ {errors.length} validation error{errors.length > 1 ? "s" : ""}</div>
-            {errors.slice(0, 5).map((err, idx) => (
-              <div key={idx} className="text-xs text-red-300/80 font-mono ml-2">
-                {err.path ? `• ${err.path}: ` : ""}{err.message}
-              </div>
-            ))}
-            {errors.length > 5 && (
-              <div className="text-xs text-red-400/60 mt-1">...and {errors.length - 5} more</div>
+        <div className="tool-card">
+          <div className="tool-toolbar">
+            {hasInput && errors.length === 0 && (
+              <span className="tool-badge ok">✓ Matches schema</span>
             )}
-          </div>
-        )}
-        {errors.length === 0 && schemaText.trim() && instanceText.trim() && (
-          <div className="border-b border-green-900/50 bg-green-950/30 px-6 py-2">
-            <span className="text-xs text-green-400">✓ All checks passed — instance matches schema</span>
-          </div>
-        )}
-
-        {/* Split editor */}
-        <div className="flex" style={{ height: "calc(100vh - 160px)" }}>
-          {/* Left: Schema */}
-          <div className="flex-1 flex flex-col border-r border-[#30363d]">
-            <div className="px-4 py-2 text-xs text-gray-400 border-b border-[#21262d] bg-[#161b22] flex items-center justify-between">
-              <span>Schema Definition</span>
-              <span className="text-[#484f58] text-[10px]">TOON-like format</span>
-            </div>
-            <div className="flex flex-1 overflow-hidden">
-              <div className="w-12 bg-[#161b22] border-r border-[#21262d] text-right pr-2 pt-3 text-xs text-[#484f58] leading-6 select-none overflow-hidden">
-                {schemaLines.map((n) => <div key={n}>{n}</div>)}
-              </div>
-              <textarea
-                value={schemaText}
-                onChange={(e) => {
-                  setSchemaText(e.target.value);
-                  setSchemaLines(lineNumbers(e.target.value.split("\n").length));
-                }}
-                className="flex-1 bg-[#0d1117] text-yellow-300 p-3 text-sm leading-6 resize-none outline-none font-mono"
-                spellCheck={false}
-                placeholder="name: string&#10;age: number&#10;required:&#10;  name: string"
-                style={{ tabSize: 2 }}
-              />
-            </div>
+            {hasInput && errors.length > 0 && (
+              <span className="tool-badge err">
+                ✗ {errors.length} error{errors.length > 1 ? "s" : ""}
+              </span>
+            )}
+            <div className="spacer" />
+            <span className="meta">
+              schema {schemaLines.length} · instance {instanceLines.length} lines
+            </span>
           </div>
 
-          {/* Right: Instance */}
-          <div className="flex-1 flex flex-col">
-            <div className="px-4 py-2 text-xs text-gray-400 border-b border-[#21262d] bg-[#161b22] flex items-center justify-between">
-              <span>Instance (TOON Data)</span>
-              <span className="text-[#484f58] text-[10px]">.toon</span>
-            </div>
-            <div className="flex flex-1 overflow-hidden">
-              <div className="w-12 bg-[#161b22] border-r border-[#21262d] text-right pr-2 pt-3 text-xs text-[#484f58] leading-6 select-none overflow-hidden">
-                {instanceLines.map((n) => <div key={n}>{n}</div>)}
+          <div className="tool-split">
+            <div className="tool-panel">
+              <div className="tool-panel-header">
+                <span>Schema definition</span>
+                <span className="hint">TOON-like rules</span>
               </div>
-              <textarea
-                value={instanceText}
-                onChange={(e) => {
-                  setInstanceText(e.target.value);
-                  setInstanceLines(lineNumbers(e.target.value.split("\n").length));
-                }}
-                className="flex-1 bg-[#0d1117] text-gray-200 p-3 text-sm leading-6 resize-none outline-none font-mono"
-                spellCheck={false}
-                placeholder="name: test&#10;age: 25"
-                style={{ tabSize: 2 }}
-              />
+              <div className="tool-editor">
+                <div className="tool-line-numbers" aria-hidden="true">
+                  {schemaLines.map((n) => (
+                    <div key={n}>{n}</div>
+                  ))}
+                </div>
+                <textarea
+                  value={schemaText}
+                  onChange={(e) => {
+                    setSchemaText(e.target.value);
+                    setSchemaLines(lineNumbers(e.target.value.split("\n").length));
+                  }}
+                  className="tool-textarea"
+                  spellCheck={false}
+                  placeholder={"name: string\nage: number"}
+                  style={{ tabSize: 2 }}
+                  aria-label="Schema definition"
+                />
+              </div>
+            </div>
+
+            <div className="tool-panel">
+              <div className="tool-panel-header">
+                <span>Instance (TOON data)</span>
+                <span className="hint">.toon</span>
+              </div>
+              <div className="tool-editor">
+                <div className="tool-line-numbers" aria-hidden="true">
+                  {instanceLines.map((n) => (
+                    <div key={n}>{n}</div>
+                  ))}
+                </div>
+                <textarea
+                  value={instanceText}
+                  onChange={(e) => {
+                    setInstanceText(e.target.value);
+                    setInstanceLines(lineNumbers(e.target.value.split("\n").length));
+                  }}
+                  className="tool-textarea"
+                  spellCheck={false}
+                  placeholder={"name: test\nage: 25"}
+                  style={{ tabSize: 2 }}
+                  aria-label="Instance data"
+                />
+              </div>
             </div>
           </div>
+
+          {errors.length > 0 && (
+            <div className="tool-issue-list">
+              {errors.map((err, idx) => (
+                <div key={idx} className="tool-issue err">
+                  <span className="tool-issue-icon">✗</span>
+                  <div className="tool-issue-body">
+                    <div className="tool-issue-msg">{err.message}</div>
+                    {err.path && <div className="tool-issue-loc">at {err.path}</div>}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
-
-        {/* Footer */}
-        <footer className="border-t border-[#30363d] px-6 py-3 flex items-center justify-between text-xs text-gray-500">
-          <span>TOON Schema Validator</span>
-          <span>Build {BUILD_DATE}</span>
-        </footer>
       </div>
+
+      <footer className="tool-footer">
+        <span>TOON Schema Validator</span>
+        <span className="sep">·</span>
+        <a
+          href="https://github.com/zning1994-agent/toon-tool"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          GitHub
+        </a>
+        <span className="sep">·</span>
+        <span>Last updated: {BUILD_DATE}</span>
+      </footer>
     </ToolLayout>
   );
 }

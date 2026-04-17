@@ -1,9 +1,9 @@
 "use client";
-import { useState } from "react";
-import SiteHeader from "@/components/SiteHeader";
+import ToolLayout from "@/components/ToolLayout";
+import { useState, useEffect } from "react";
 import { BUILD_DATE } from "@/lib/constants";
 
-/* ── Lexer (same logic as converter.ts) ── */
+/* ── Lexer (kept in sync with converter.ts; local copy so validator page stays self-contained) ── */
 function splitCSV(s: string): string[] {
   const result: string[] = [];
   let accum = "";
@@ -73,7 +73,6 @@ function lex(toon: string): LexedLine[] {
   });
 }
 
-/* ── Validation rules ── */
 interface Issue {
   sev: "error" | "warning" | "info";
   line: number;
@@ -142,188 +141,144 @@ function validateTOON(toon: string): Issue[] {
   return issues;
 }
 
-/* ── i18n ── */
-const I18N: Record<string, Record<string, string>> = {
-  en: { subtitle: "Check TOON syntax with line-level error reporting and fix suggestions", placeholder: "Paste your TOON code here...", valid: "✓ Valid", errors: "error(s)", warnings: "warning(s)", noIssues: "No issues found — syntax looks good!", issuesTitle: "Issues", fix: "Fix", lines: "lines", chars: "chars" },
-  "zh-CN": { subtitle: "逐行检查 TOON 语法，标出错误并提供修复建议", placeholder: "在此粘贴 TOON 代码...", valid: "✓ 语法正确", errors: "个错误", warnings: "个警告", noIssues: "未发现问题 — 语法正确！", issuesTitle: "问题列表", fix: "修复", lines: "行", chars: "字符" },
-};
+const STORAGE_KEY = "toon-val-input";
 
 export default function ValidatorPage() {
-  const [input, setInput] = useState(() => {
-    if (typeof window !== "undefined") return localStorage.getItem("toon-val-input") || "";
-    return "";
-  });
-  const [lang, setLang] = useState(() => {
-    if (typeof window !== "undefined") return localStorage.getItem("toon-val-lang") || "en";
-    return "en";
-  });
+  const [input, setInput] = useState("");
 
-  const t = I18N[lang] || I18N.en;
+  useEffect(() => {
+    const saved = typeof window !== "undefined" ? localStorage.getItem(STORAGE_KEY) : null;
+    if (saved) setInput(saved);
+  }, []);
+
+  const handleInputChange = (v: string) => {
+    setInput(v);
+    try {
+      localStorage.setItem(STORAGE_KEY, v);
+    } catch {
+      /* storage unavailable — silently ignore */
+    }
+  };
+
   const issues = validateTOON(input);
-  const errs = issues.filter(i => i.sev === "error");
-  const warns = issues.filter(i => i.sev === "warning");
-  const infos = issues.filter(i => i.sev === "info");
+  const errs = issues.filter((i) => i.sev === "error");
+  const warns = issues.filter((i) => i.sev === "warning");
+  const infos = issues.filter((i) => i.sev === "info");
   const lines = input.split("\n");
 
-  function statusText() {
-    if (errs.length > 0) return { cls: "err", text: `✗ ${errs.length} ${t.errors}` };
-    if (warns.length > 0) return { cls: "warn", text: `⚠ ${warns.length} ${t.warnings}` };
-    if (input.trim()) return { cls: "ok", text: "✓ " + t.valid };
-    return { cls: "ok", text: "✓ " + t.valid };
-  }
-  const badge = statusText();
-
-  function handleLangChange(l: string) {
-    setLang(l);
-    localStorage.setItem("toon-val-lang", l);
+  let badgeCls: "ok" | "err" | "warn" = "ok";
+  let badgeText = "✓ Valid";
+  if (errs.length > 0) {
+    badgeCls = "err";
+    badgeText = `✗ ${errs.length} error${errs.length > 1 ? "s" : ""}`;
+  } else if (warns.length > 0) {
+    badgeCls = "warn";
+    badgeText = `⚠ ${warns.length} warning${warns.length > 1 ? "s" : ""}`;
   }
 
-  function handleInputChange(v: string) {
-    setInput(v);
-    localStorage.setItem("toon-val-input", v);
-  }
+  const sortedIssues = [...errs, ...warns, ...infos];
 
   return (
-    <>
-      <SiteHeader />
-      {/* SEO meta — injected via parent layout */}
-      <div style={vars}>
-        <style>{`
-          * { box-sizing: border-box; margin: 0; padding: 0; }
-          body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; min-height: 100vh; }
-          header { border-bottom: 1px solid var(--border); padding: 12px 24px; display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
-          .logo { font-size: 16px; font-weight: 600; color: var(--accent); text-decoration: none; }
-          .logo span { color: var(--muted); font-weight: 400; }
-          nav { display: flex; gap: 16px; margin-left: auto; }
-          nav a { color: var(--muted); text-decoration: none; font-size: 14px; }
-          nav a:hover, nav a.active { color: var(--text); }
-          nav a.active { color: var(--accent); }
-          .hero { text-align: center; padding: 28px 24px 20px; }
-          .hero h1 { font-size: 22px; font-weight: 600; margin-bottom: 6px; }
-          .hero p { color: var(--muted); font-size: 14px; }
-          main { max-width: 960px; margin: 0 auto; padding: 0 24px 48px; }
-          .toolbar { display: flex; gap: 8px; margin-bottom: 12px; align-items: center; flex-wrap: wrap; }
-          .spacer { flex: 1; }
-          .btn { padding: 6px 14px; border-radius: 6px; border: 1px solid var(--border); background: var(--surface); color: var(--text); font-size: 13px; cursor: pointer; }
-          .btn:hover { background: #21262d; }
-          .btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
-          .btn.primary:hover { background: #79b8ff; }
-          .editor-wrap { position: relative; }
-          .line-numbers { position: absolute; top: 0; left: 0; width: 48px; background: var(--surface); border-right: 1px solid var(--border); padding: 14px 8px; text-align: right; font-family: 'Consolas','Fira Code',monospace; font-size: 13px; line-height: 1.6; color: var(--muted); user-select: none; border-radius: 8px 0 0 8px; overflow: hidden; pointer-events: none; }
-          textarea { width: 100%; min-height: 360px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-family: 'Consolas','Fira Code',monospace; font-size: 13px; line-height: 1.6; padding: 14px 16px 14px 60px; resize: vertical; outline: none; transition: border-color .2s; }
-          textarea:focus { border-color: var(--accent); }
-          .status-bar { display: flex; align-items: center; gap: 12px; margin-top: 8px; font-size: 13px; flex-wrap: wrap; }
-          .status-badge { display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; }
-          .status-badge.ok { background: #0d2a14; color: var(--green); border: 1px solid #1a4d2e; }
-          .status-badge.err { background: #2a0d0d; color: var(--red); border: 1px solid #4d1a1a; }
-          .status-badge.warn { background: #2a200a; color: var(--yellow); border: 1px solid #4d3a0f; }
-          #results { margin-top: 20px; }
-          .results-header { font-size: 13px; font-weight: 600; color: var(--muted); margin-bottom: 8px; text-transform: uppercase; letter-spacing: .5px; }
-          .issue-list { display: flex; flex-direction: column; gap: 6px; }
-          .issue { display: flex; align-items: flex-start; gap: 10px; padding: 10px 14px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface); font-size: 13px; line-height: 1.5; }
-          .issue.error { border-color: #4d1a1a; background: #2a0d0d; }
-          .issue.warning { border-color: #4d3a0f; background: #2a200a; }
-          .issue.info { border-color: var(--border); }
-          .issue-icon { flex-shrink: 0; font-size: 14px; margin-top: 1px; }
-          .issue.error .issue-icon { color: var(--red); }
-          .issue.warning .issue-icon { color: var(--yellow); }
-          .issue.info .issue-icon { color: var(--accent); }
-          .issue-body { flex: 1; }
-          .issue-msg { color: var(--text); }
-          .issue-loc { color: var(--muted); font-family: monospace; font-size: 12px; margin-top: 2px; }
-          .issue-fix { color: var(--green); font-size: 12px; margin-top: 3px; }
-          .issue-fix code { background: #0d2a14; padding: 1px 5px; border-radius: 4px; }
-          footer { border-top: 1px solid var(--border); padding: 16px 24px; text-align: center; font-size: 12px; color: var(--muted); }
-          footer a { color: var(--muted); text-decoration: none; }
-          footer a:hover { color: var(--accent); }
-          #lang-switcher { position: fixed; top: 14px; right: 24px; z-index: 10; }
-          #lang-switcher select { background: var(--surface); border: 1px solid var(--border); color: var(--text); font-size: 12px; padding: 4px 8px; border-radius: 6px; cursor: pointer; }
-        `}</style>
+    <ToolLayout>
+      <div className="tool-shell">
+        <section className="tool-hero">
+          <h1>TOON Validator</h1>
+          <p>
+            Line-level TOON syntax checking with fix suggestions. Paste your TOON
+            and see errors, warnings and style hints instantly.
+          </p>
+        </section>
 
-        <div id="lang-switcher">
-          <select value={lang} onChange={e => handleLangChange(e.target.value)}>
-            <option value="en">EN</option>
-            <option value="zh-CN">中文</option>
-          </select>
-        </div>
-
-        <div className="hero">
-          <h1>🔍 TOON Validator</h1>
-          <p>{t.subtitle}</p>
-        </div>
-
-        <main>
-          <div className="toolbar">
-            <button className="btn primary" onClick={() => {}}>Validate</button>
-            <button className="btn" onClick={() => handleInputChange("")}>Clear</button>
+        <div className="tool-card">
+          <div className="tool-toolbar">
+            <button
+              className="btn btn-small"
+              onClick={() => handleInputChange("")}
+              disabled={!input}
+            >
+              Clear
+            </button>
+            <span className={`tool-badge ${badgeCls}`}>{badgeText}</span>
             <div className="spacer" />
-            <span style={{ color: "var(--muted)", fontSize: "13px" }}>
-              {input.length} {t.chars} · {lines.length} {t.lines}
+            <span className="meta">
+              {lines.length} lines · {input.length} chars
             </span>
           </div>
 
-          <div className="editor-wrap">
-            <div className="line-numbers">
-              {lines.map((_, i) => <div key={i}>{i + 1}</div>)}
+          <div className="tool-panel">
+            <div className="tool-panel-header">
+              <span>TOON source</span>
+              <span className="hint">auto-saved</span>
             </div>
-            <textarea
-              value={input}
-              onChange={e => handleInputChange(e.target.value)}
-              placeholder={t.placeholder}
-              spellCheck={false}
-            />
+            <div className="tool-editor">
+              <div className="tool-line-numbers" aria-hidden="true">
+                {lines.map((_, i) => (
+                  <div key={i}>{i + 1}</div>
+                ))}
+              </div>
+              <textarea
+                value={input}
+                onChange={(e) => handleInputChange(e.target.value)}
+                placeholder="Paste your TOON code here..."
+                spellCheck={false}
+                className="tool-textarea"
+                style={{ tabSize: 2 }}
+                aria-label="TOON source"
+              />
+            </div>
           </div>
 
-          <div className="status-bar">
-            <span className={`status-badge ${badge.cls}`}>{badge.text}</span>
-          </div>
-
-          <div id="results">
-            {input.trim() && (
-              <>
-                <div className="results-header">{t.issuesTitle} ({errs.length} errors, {warns.length} warnings)</div>
-                <div className="issue-list">
-                  {[...errs, ...warns, ...infos].map((issue, idx) => (
-                    <div key={idx} className={`issue ${issue.sev}`}>
-                      <span className="issue-icon">{issue.sev === "error" ? "✗" : issue.sev === "warning" ? "⚠" : "ℹ"}</span>
-                      <div className="issue-body">
-                        <div className="issue-msg">{issue.msg}</div>
-                        <div className="issue-loc">Line {issue.line}</div>
-                        {issue.fix && <div className="issue-fix">→ {t.fix}: <code>{issue.fix}</code></div>}
-                      </div>
-                    </div>
-                  ))}
-                  {issues.length === 0 && (
-                    <div className="issue info">
-                      <span className="issue-icon">✓</span>
-                      <div className="issue-body"><div className="issue-msg">{t.noIssues}</div></div>
-                    </div>
-                  )}
+          {input.trim() && (
+            <div className="tool-issue-list">
+              {sortedIssues.length === 0 ? (
+                <div className="tool-banner ok">
+                  ✓ No issues found — syntax looks good.
                 </div>
-              </>
-            )}
-          </div>
-        </main>
-
-        <footer>
-          Part of <a href="https://github.com/zning1994-agent/toon-tool">toon-tool</a> ·{" "}
-          <a href="https://github.com/zning1994-agent/toon-tool">Converter</a> ·{" "}
-          TOON spec: <a href="https://toonformat.dev">toonformat.dev</a> ·{" "}
-          Last updated: {BUILD_DATE}
-        </footer>
+              ) : (
+                sortedIssues.map((issue, idx) => (
+                  <div
+                    key={idx}
+                    className={`tool-issue ${
+                      issue.sev === "error" ? "err" : issue.sev === "warning" ? "warn" : "info"
+                    }`}
+                  >
+                    <span className="tool-issue-icon">
+                      {issue.sev === "error" ? "✗" : issue.sev === "warning" ? "⚠" : "ℹ"}
+                    </span>
+                    <div className="tool-issue-body">
+                      <div className="tool-issue-msg">{issue.msg}</div>
+                      <div className="tool-issue-loc">Line {issue.line}</div>
+                      {issue.fix && (
+                        <div className="tool-issue-fix">
+                          → Fix: <code>{issue.fix}</code>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          )}
+        </div>
       </div>
-    </>
+
+      <footer className="tool-footer">
+        <span>TOON Validator</span>
+        <span className="sep">·</span>
+        <a href="https://toonformat.dev" target="_blank" rel="noopener noreferrer">
+          Spec
+        </a>
+        <span className="sep">·</span>
+        <a
+          href="https://github.com/zning1994-agent/toon-tool"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          GitHub
+        </a>
+        <span className="sep">·</span>
+        <span>Last updated: {BUILD_DATE}</span>
+      </footer>
+    </ToolLayout>
   );
 }
-
-const vars = {
-  "--bg": "#0d1117",
-  "--surface": "#161b22",
-  "--border": "#30363d",
-  "--text": "#e6edf3",
-  "--muted": "#7d8590",
-  "--accent": "#58a6ff",
-  "--green": "#3fb950",
-  "--red": "#f85149",
-  "--yellow": "#d29922",
-} as React.CSSProperties;
